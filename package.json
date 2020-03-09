@@ -3,9 +3,14 @@
   "version": "1.0.0",
   "description": "",
   "main": "dist/index.js",
+  "engines": {
+    "node": "10"
+  },
   "scripts": {
-    "start": "ts-node src/index.ts",
-    "build": "npm run lint && rm -rf ./dist && tsc",
+    "start:dev": "ts-node src/index.ts",
+    "heroku-postbuild": "npm run build",
+    "start": "node dist/index.js",
+    "build": "npm run lint && rm -rf ./dist && tsc && cp src/client/*.html dist/client/",
     "lint": "tslint -p .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
