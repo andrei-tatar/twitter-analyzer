@@ -14,7 +14,7 @@ export function storeMessageEvent(): MonoTypeOperatorFunction<SocialMediaMessage
 
 const msgCollection$ = defer(() => MongoClient.connect(MONGO_CONNECTION))
     .pipe(
-        map(client => client.db('analyzer').collection('messages')),
+        map(client => client.db().collection('messages')),
         publishReplay(1),
         refCount(),
     );

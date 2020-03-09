@@ -45,7 +45,7 @@
 
     async function loadSettings() {
         const response = await fetch('/api/settings');
-        const body = response.json();
+        const body = await response.json();
         document.getElementById('track').value = body.track;
         document.getElementById('windowsize').value = body.windowSizeSeconds;
         document.getElementById('threshold').value = body.threshold;
@@ -54,13 +54,16 @@
     async function updateSettings() {
         const settings = {
             track: document.getElementById('track').value,
-            windowSizeSeconds: document.getElementById('windowsize').value,
-            threshold: document.getElementById('threshold').value,
+            windowSizeSeconds: parseInt(document.getElementById('windowsize').value),
+            threshold: parseFloat(document.getElementById('threshold').value),
         };
 
-        await fetch({
+        await fetch('/api/settings', {
             method: 'PATCH',
-            body: settings,
+            body: JSON.stringify(settings),
+            headers: {
+                'content-type': 'application/json',
+            },
         });
     }
 
