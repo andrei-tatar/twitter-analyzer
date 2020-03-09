@@ -1,5 +1,5 @@
 import { merge } from 'rxjs';
-import { concatMap, map, publish, refCount, shareReplay, throttleTime } from 'rxjs/operators';
+import { concatMap, map, publish, publishReplay, refCount, shareReplay, throttleTime } from 'rxjs/operators';
 
 import { createServer } from './app';
 import { countByLocation } from './processors/count-by-location';
@@ -23,7 +23,7 @@ const eventsInTimeWindow$ = messages$.pipe(
     geocodeMessage(),
     windowDynamicTime(windowSizeSeconds$),
     map(windowEvents => windowEvents.pipe(publish(), refCount())),
-    publish(),
+    publishReplay(1),
     refCount(),
 );
 
