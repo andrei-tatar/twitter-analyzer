@@ -5,8 +5,19 @@ import { SocialMediaMessageEvent } from '../common';
 import { MONGO_ARCHIVE_COUNT, MONGO_CONNECTION } from '../config';
 import { isDefined } from '../utils';
 
+const db$ = defer(() => MongoClient.connect(MONGO_CONNECTION))
+    .pipe(
+        map(client => client.db()),
+        publishReplay(1),
+        refCount(),
+    );
+
+const msgCollection$ = db$.pipe(map(db => db.collection('messages')));
+const msgArchiveCollection$ = db$.pipe(map(db => db.collection('messages-archive')));
+
 const archiveOlderMessagesPeriodically$ = interval(10 * 60 * 1000).pipe(
-    switchMap(_ => archiveOlderMessages),
+    withLatestFrom(msgCollection$, msgArchiveCollection$),
+    switchMap(([_, collection, archive]) => archiveOlderMessages(collection, archive)),
     ignoreElements(),
 );
 
@@ -16,13 +27,6 @@ export function storeMessageEvent(): MonoTypeOperatorFunction<SocialMediaMessage
         concatMap(([message, collection]) => collection.insertOne(message).then(_ => message)),
     );
 }
-
-const msgCollection$ = defer(() => MongoClient.connect(MONGO_CONNECTION))
-    .pipe(
-        map(client => client.db().collection('messages')),
-        publishReplay(1),
-        refCount(),
-    );
 
 async function archiveOlderMessages(
     collection: Collection<SocialMediaMessageEvent>,
