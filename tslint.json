@@ -5,6 +5,7 @@
     ],
     "jsRules": {},
     "rules": {
+        "no-empty": false,
         "no-console": false,
         "ordered-imports": true,
         "quotemark": [true, "single"]
