@@ -1,9 +1,8 @@
 import { Observable, OperatorFunction } from 'rxjs';
-import { concatMap, filter, scan, withLatestFrom } from 'rxjs/operators';
-import { isDefined } from '../utils';
+import { concatMap, scan, withLatestFrom } from 'rxjs/operators';
 import { CountByLocation } from './count-by-location';
 
-export function detectMessageCountVariationByLocation(threshold$: Observable<number>): OperatorFunction<CountByLocation, CountVariationAnnomaly> {
+export function detectMessageCountVariationByLocation(threshold$: Observable<number>): OperatorFunction<CountByLocation, CountVariationAlert> {
     return source => source.pipe(
         withLatestFrom(threshold$),
         scan((ctx, [current, threshold]) => {
@@ -17,7 +16,7 @@ export function detectMessageCountVariationByLocation(threshold$: Observable<num
                     const change = (count - lastCount) / lastCount;
                     if (change > threshold) {
                         ctx.alerts.push({
-                            type: 'count-variation-annomaly',
+                            type: 'count-variation-alert',
                             change,
                             at: new Date().toString(),
                             country,
@@ -30,15 +29,14 @@ export function detectMessageCountVariationByLocation(threshold$: Observable<num
             return ctx;
         }, { alerts: [] } as {
             last?: CountByLocation;
-            alerts: CountVariationAnnomaly[];
+            alerts: CountVariationAlert[];
         }),
         concatMap(ctx => ctx.alerts),
-        filter(isDefined),
     );
 }
 
-export interface CountVariationAnnomaly {
-    type: 'count-variation-annomaly';
+export interface CountVariationAlert {
+    type: 'count-variation-alert';
     change: number;
     at: string;
     country: string;

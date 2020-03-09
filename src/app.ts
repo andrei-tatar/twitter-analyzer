@@ -10,7 +10,7 @@ import { GOOGLE_API_KEY, PORT } from './config';
 import { settings$, updateSettings } from './settings';
 
 export function createServer<TAnnomaly, THeatMap>(info: {
-    annomalies$: Observable<TAnnomaly>,
+    alerts$: Observable<TAnnomaly>,
     heatMap$: Observable<THeatMap>
 }) {
     return new Observable<never>(_ => {
@@ -42,9 +42,9 @@ export function createServer<TAnnomaly, THeatMap>(info: {
                 .pipe(takeUntil(stop$))
                 .subscribe(map => socket.emit('heatmap', map));
 
-            info.annomalies$
+            info.alerts$
                 .pipe(takeUntil(stop$))
-                .subscribe(map => socket.emit('annomalies', map));
+                .subscribe(alert => socket.emit('alert', alert));
 
             socket.emit('key', GOOGLE_API_KEY);
 

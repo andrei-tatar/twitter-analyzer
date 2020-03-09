@@ -1,4 +1,5 @@
-import { concatMap, map, publish, refCount, shareReplay } from 'rxjs/operators';
+import { merge } from 'rxjs';
+import { concatMap, map, publish, refCount, shareReplay, throttleTime } from 'rxjs/operators';
 
 import { createServer } from './app';
 import { countByLocation } from './processors/count-by-location';
@@ -28,20 +29,26 @@ const eventsInTimeWindow$ = messages$.pipe(
 
 const heatMap$ = eventsInTimeWindow$.pipe(
     getHeatMap(),
+    throttleTime(15000),
+    shareReplay(1),
 );
 
-const annomalies$ = eventsInTimeWindow$.pipe(
+const alerts$ = eventsInTimeWindow$.pipe(
     concatMap(events =>
         events.pipe(countByLocation()),
     ),
     detectMessageCountVariationByLocation(threshold$),
-    shareReplay(10),
+    shareReplay(20),
 );
 
-const sub = createServer({
-    annomalies$,
+const sub = merge(
+    createServer({
+        alerts$,
+        heatMap$,
+    }),
+    alerts$,
     heatMap$,
-}).subscribe();
+).subscribe();
 
 process.on('SIGINT', () => {
     console.log('stopping');

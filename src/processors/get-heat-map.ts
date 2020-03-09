@@ -1,5 +1,5 @@
 import { defer, Observable, OperatorFunction } from 'rxjs';
-import { scan, shareReplay, switchMap, throttleTime } from 'rxjs/operators';
+import { scan, switchMap } from 'rxjs/operators';
 
 import { MessageWithLocation } from './geocode-message';
 
@@ -23,8 +23,6 @@ export function getHeatMap(): OperatorFunction<Observable<MessageWithLocation>, 
                 })
             ))
         ),
-        throttleTime(15000),
-        shareReplay(1),
     );
 }
 

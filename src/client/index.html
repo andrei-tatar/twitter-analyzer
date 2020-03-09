@@ -33,14 +33,10 @@
         googleHeatMap.setMap(map);
     });
 
-    socket.on('annomalies', annomalies => {
-        const ul = document.getElementById('annomalies');
-        ul.innerHTML = '';
-        for (const annomaly of annomalies) {
-            const li = document.createElement('li');
-            li.innerText = JSON.stringify(annomaly, null, 2);
-            ul.appendChild(li);
-        }
+    socket.on('alert', alert => {
+        const li = document.createElement('li');
+        li.innerText = JSON.stringify(alert, null, 2);
+        document.getElementById('alerts').appendChild(li);
     });
 
     async function loadSettings() {
@@ -93,7 +89,7 @@
 
 </div>
 
-<label for="annomalies">Annomalies:</label>
-<ul id="annomalies">
+<label>Alerts:</label>
+<ul id="alerts">
 
 </ul>
