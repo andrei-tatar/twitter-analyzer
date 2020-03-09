@@ -1,12 +1,17 @@
 import { Collection, MongoClient } from 'mongodb';
-import { defer, from, MonoTypeOperatorFunction } from 'rxjs';
-import { bufferCount, concatMap, filter, map, publishReplay, refCount, switchMap, withLatestFrom } from 'rxjs/operators';
+import { defer, from, interval, merge, MonoTypeOperatorFunction } from 'rxjs';
+import { bufferCount, concatMap, filter, ignoreElements, map, publishReplay, refCount, switchMap, withLatestFrom } from 'rxjs/operators';
 import { SocialMediaMessageEvent } from '../common';
 import { MONGO_ARCHIVE_COUNT, MONGO_CONNECTION } from '../config';
 import { isDefined } from '../utils';
 
+const archiveOlderMessagesPeriodically$ = interval(10 * 60 * 1000).pipe(
+    switchMap(_ => archiveOlderMessages),
+    ignoreElements(),
+);
+
 export function storeMessageEvent(): MonoTypeOperatorFunction<SocialMediaMessageEvent> {
-    return source => source.pipe(
+    return source => merge(source, archiveOlderMessagesPeriodically$).pipe(
         withLatestFrom(msgCollection$),
         concatMap(([message, collection]) => collection.insertOne(message).then(_ => message)),
     );
@@ -23,16 +28,20 @@ async function archiveOlderMessages(
     collection: Collection<SocialMediaMessageEvent>,
     archive: Collection<SocialMediaMessageEvent>,
 ) {
-    const count = await collection.countDocuments();
-    if (count > MONGO_ARCHIVE_COUNT) {
-        const countToArchive = MONGO_ARCHIVE_COUNT - count;
-        const idsToArchive = await collection.find().map(d => d.id).limit(countToArchive).toArray();
+    try {
+        const count = await collection.countDocuments();
+        if (count > MONGO_ARCHIVE_COUNT) {
+            const countToArchive = MONGO_ARCHIVE_COUNT - count;
+            const idsToArchive = await collection.find().map(d => d.id).limit(countToArchive).toArray();
 
-        await from(idsToArchive).pipe(
-            switchMap(id => collection.findOne({ id })),
-            filter(isDefined),
-            bufferCount(20),
-            switchMap(items => archive.insertMany(items)),
-        ).toPromise();
+            await from(idsToArchive).pipe(
+                switchMap(id => collection.findOne({ id })),
+                filter(isDefined),
+                bufferCount(20),
+                switchMap(items => archive.insertMany(items)),
+            ).toPromise();
+        }
+    } catch (err) {
+        console.warn('error during archiving', err);
     }
 }

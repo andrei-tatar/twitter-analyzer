@@ -1,6 +1,5 @@
 import { expect } from 'chai';
 import { EMPTY, from, Subject } from 'rxjs';
-import { first, last } from 'rxjs/operators';
 import { countByLocation } from './count-by-location';
 import { MessageWithLocation } from './geocode-message';
 
