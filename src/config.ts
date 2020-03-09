@@ -8,5 +8,6 @@ export const TWITTER = {
 export const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY ?? '';
 
 export const MONGO_CONNECTION = process.env.MONGODB_URI ?? '';
+export const PORT = parseInt(process.env.PORT ?? '3000', 10);
 
 export const MONGO_ARCHIVE_COUNT = 100e3;

@@ -6,7 +6,7 @@ import { Observable, Subject } from 'rxjs';
 import { first, takeUntil } from 'rxjs/operators';
 import socketIo from 'socket.io';
 
-import { GOOGLE_API_KEY } from './config';
+import { GOOGLE_API_KEY, PORT } from './config';
 import { settings$, updateSettings } from './settings';
 
 export function createServer<TAnnomaly, THeatMap>(info: {
@@ -51,7 +51,7 @@ export function createServer<TAnnomaly, THeatMap>(info: {
             socket.on('disconnect', () => stop$.next());
         });
 
-        server.listen(3000, () => {
+        server.listen(PORT, () => {
             console.log('server is running');
         });
 
