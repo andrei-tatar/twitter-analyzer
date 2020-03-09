@@ -1,29 +1,18 @@
 <script src="/socket.io/socket.io.js"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB7k4N-kBKGARSRv8uFDM5LPjptw60NQKM&libraries=visualization">
+</script>
 
 <script type="module">
     const socket = io.connect();
-    let resolveMap;
-    const mapPromise = new Promise(resolve => resolveMap = resolve)
-
-    window.mapsApiLoaded = function () {
-        resolveMap(new google.maps.Map(document.getElementById('map'), {
-            center: new google.maps.LatLng(30, 0),
-            zoom: 2,
-            mapTypeId: 'satellite'
-        }));
-    };
-
-    socket.on('key', key => {
-        const script = document.createElement('script');
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${key}&libraries=visualization&callback=mapsApiLoaded`;
-        script.type = 'text/javascript';
-        document.body.appendChild(script);
+    const map = new google.maps.Map(document.getElementById('map'), {
+        center: new google.maps.LatLng(30, 0),
+        zoom: 2,
+        mapTypeId: 'satellite'
     });
 
     let googleHeatMap;
-    socket.on('heatmap', async heatmap => {
+    socket.on('heatmap', heatmap => {
         document.getElementById('windowTime').innerText = `Window start: ${heatmap.start}\nTweets: ${heatmap.tweets}\nUntracked: ${heatmap.untracked}`;
-        const map = await mapPromise;
         if (googleHeatMap) {
             googleHeatMap.setMap(null);
         }
