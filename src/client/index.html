@@ -1,0 +1,96 @@
+<script src="/socket.io/socket.io.js"></script>
+
+<script type="module">
+    const socket = io.connect();
+    let resolveMap;
+    const mapPromise = new Promise(resolve => resolveMap = resolve)
+
+    window.mapsApiLoaded = function () {
+        resolveMap(new google.maps.Map(document.getElementById('map'), {
+            center: new google.maps.LatLng(30, 0),
+            zoom: 2,
+            mapTypeId: 'satellite'
+        }));
+    };
+
+    socket.on('key', key => {
+        const script = document.createElement('script');
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${key}&libraries=visualization&callback=mapsApiLoaded`;
+        script.type = 'text/javascript';
+        document.body.appendChild(script);
+    });
+
+    let googleHeatMap;
+    socket.on('heatmap', async heatmap => {
+        document.getElementById('windowTime').innerText = `Window start: ${heatmap.start}\nTweets: ${heatmap.tweets}\nUntracked: ${heatmap.untracked}`;
+        const map = await mapPromise;
+        if (googleHeatMap) {
+            googleHeatMap.setMap(null);
+        }
+        googleHeatMap = new google.maps.visualization.HeatmapLayer({
+            data: heatmap.coordinates.map(([lat, lng]) => new google.maps.LatLng(lat, lng))
+        });
+        googleHeatMap.setMap(map);
+    });
+
+    socket.on('annomalies', annomalies => {
+        const ul = document.getElementById('annomalies');
+        ul.innerHTML = '';
+        for (const annomaly of annomalies) {
+            const li = document.createElement('li');
+            li.innerText = JSON.stringify(annomaly, null, 2);
+            ul.appendChild(li);
+        }
+    });
+
+    async function loadSettings() {
+        const response = await fetch('/api/settings');
+        const body = response.json();
+        document.getElementById('track').value = body.track;
+        document.getElementById('windowsize').value = body.windowSizeSeconds;
+        document.getElementById('threshold').value = body.threshold;
+    }
+
+    async function updateSettings() {
+        const settings = {
+            track: document.getElementById('track').value,
+            windowSizeSeconds: document.getElementById('windowsize').value,
+            threshold: document.getElementById('threshold').value,
+        };
+
+        await fetch({
+            method: 'PATCH',
+            body: settings,
+        });
+    }
+
+    loadSettings();
+    document.getElementById('update').addEventListener('click', () => updateSettings());
+</script>
+
+<div style="display: flex; flex-direction: row;">
+    <div style="display: flex; flex-direction: column; max-width: 250px;">
+        <label for="track">Track</label>
+        <input id="track" style="margin-bottom: 1rem">
+
+        <label for="windowsize">Window size (seconds)</label>
+        <input id="windowsize" type="number" min="1" style="margin-bottom: 1rem">
+
+        <label for="threshold">Annomaly variation threshold</label>
+        <input id="threshold" type="number" min=".01" step="0.01" style="margin-bottom: 1rem">
+    </div>
+    <button id="update" style="margin-left: 1rem; align-self: start;">Update</button>
+</div>
+
+
+<div id="windowTime">
+
+</div>
+<div id="map" style="height: 600px;">
+
+</div>
+
+<label for="annomalies">Annomalies:</label>
+<ul id="annomalies">
+
+</ul>

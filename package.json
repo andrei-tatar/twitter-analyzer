@@ -1,0 +1,29 @@
+{
+  "name": "twitter-analyzer",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "scripts": {
+    "start": "ts-node src/index.ts",
+    "build": "npm run lint && rm -rf ./dist && tsc",
+    "lint": "tslint -p .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Andrei-Calin Tatar",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/express": "^4.17.3",
+    "@types/socket.io": "^2.1.4",
+    "@types/twit": "^2.2.23",
+    "ts-node": "^8.6.2",
+    "tslint": "^6.0.0",
+    "typescript": "^3.8.3"
+  },
+  "dependencies": {
+    "@googlemaps/google-maps-services-js": "^2.1.2",
+    "express": "^4.17.1",
+    "rxjs": "^6.5.4",
+    "socket.io": "^2.3.0",
+    "twit": "^2.2.11"
+  }
+}
