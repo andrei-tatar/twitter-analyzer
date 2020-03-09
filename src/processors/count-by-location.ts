@@ -15,7 +15,6 @@ export function countByLocation(): OperatorFunction<MessageWithLocation, CountBy
 
             return ctx;
         }, {} as CountByLocation),
-        startWith({}),
     )
 }
 

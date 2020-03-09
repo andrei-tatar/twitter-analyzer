@@ -6,14 +6,6 @@ import { MessageWithLocation } from './geocode-message';
 describe('count-by-location', () => {
     const sut = countByLocation();
 
-    it('should start with an empty value', async () => {
-        // act
-        const result = await sut(EMPTY).toPromise();
-
-        // assert
-        expect(result).deep.eq({});
-    });
-
     it('should aggregate by location.country', async () => {
 
         // arrange

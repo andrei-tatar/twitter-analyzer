@@ -24,7 +24,7 @@ export async function updateSettings(update: Partial<Settings>) {
 export const settings$ = update$.pipe(
     startWith({
         track: '#covid-19',
-        windowSizeSeconds: 3600,
+        windowSizeSeconds: 1800,
         threshold: .2,
     }),
     shareReplay(1),
